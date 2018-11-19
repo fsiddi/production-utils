@@ -195,20 +195,19 @@ subprocess.call(gnuplot_command)
 # Combine the chart with images sequence and overlay the playhead
 
 
-# For instance if you've got a 3 minutes song and a video width of 1280:
+# For instance if we have a 260 frames clip
 #
-# 3 minutes = 3x60 = 180 seconds.
-# "Width of your video / Duration of your video" = 1280 / 180 = 7.11 pixels / second.
-# 7.11 is the value to use instead of 5 in -W+(t)*5,.
+# 260 frames = 260 / <args.framerate> = 10.83333 seconds
+# video_width / video_duration = 2048 / 10.83333 = 189.04621 pixels / second.
 
+# Arbitrary offset defined by the chart
+chart_margin_x_pixel = 32
 
-# ffmpeg -i extract/2018_11_09_002-spring.mov -i chart.png -i playhead.png -filter_complex "overlay, overlay=x='if(gte(t,0), -w+(t)*4.87, NAN)':y=0" output.mp4
+chart_width = int(frame_width) - chart_margin_x_pixel
 
-# ffmpeg -framerate 24 -i extract/frames/%03d.jpg -i chart.png -i playhead.png -filter_complex "overlay, overlay=x='if(gte(t,0), -w+(t)*364.1, NAN)':y=0" output.mp4
+pixel_per_second = chart_width / (len(frames) / args.framerate)
 
-pixel_per_second = int(frame_width) / (len(frames) / args.framerate)
-
-overlay_string = f"overlay, overlay=x='if(gte(t,0), -w+(t)*{pixel_per_second}, NAN)':y=0"
+overlay_string = f"overlay, overlay=x='if(gte(t,0), -w+{chart_margin_x_pixel}+(t)*{pixel_per_second}, NAN)':y=0"
 
 # Get the number of the first frame of the sequence
 start_number = stats[0]['frame_number']
