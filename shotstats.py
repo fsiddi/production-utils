@@ -15,7 +15,7 @@ import tempfile
 
 parser = argparse.ArgumentParser(description='Generate shots stats.')
 parser.add_argument('-i', '--in_path', help='Input path', required=True)
-parser.add_argument('-o', '--output_file', help='Output file path', default='out_grid.png')
+parser.add_argument('-o', '--out_path', help='Output directory')
 parser.add_argument('-y', '--skip_confirmation', help='Skip confirmation', action='store_true')
 parser.add_argument('-f', '--framerate', help='Framerate', default=24)
 parser.add_argument('--memory_unit', default='G')
@@ -122,18 +122,20 @@ cwd = Path(os.getcwd())
 # Get absolute path of input dir (if relative it will be combined with cwd)
 in_dir_absolute_path = cwd.joinpath(args.in_path)
 
+frames_stats_path = in_dir_absolute_path / 'frames_stats.csv'
+
 # Look for exr files
 frames = sorted(in_dir_absolute_path.glob('*.exr'))
 if frames:
     stats = parse_exr_frames(frames)
-    with open('frames_stats.csv', 'w', newline='') as csvfile:
+    with open(frames_stats_path, 'w', newline='') as csvfile:
         fieldnames = ['frame_number', 'name', 'memory_in_mb', 'render_time_in_s']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames, delimiter='\t')
 
         writer.writeheader()
         for s in stats:
             writer.writerow(s)
-        print('frames_stats.csv is ready.')
+        print(f'{frames_stats_path} is ready.')
 else:
     # TODO(fsiddi) Handle PNG images
     print('No images found.')
@@ -143,10 +145,28 @@ else:
 
 # Make chart with memory usage and render time, using the size of frame
 
+# tmp_dir = tempfile.TemporaryDirectory()
+# tmp_dir_path = Path(tmp_dir.name)
+gnuplot_chart_config_path = in_dir_absolute_path / 'gnuplot_chart'
+chart_file_path = in_dir_absolute_path / 'chart.png'
+
+template_vars = {
+    'tmp_chart_file': chart_file_path,
+    'frames_stats_file': frames_stats_path,
+}
+
+with open('gnuplot_chart.tpl') as fp:
+    line = fp.readline()
+    with open(gnuplot_chart_config_path, 'w') as fc:
+        while line:
+            parsed_line = line.format(**template_vars)
+            fc.write(parsed_line)
+            line = fp.readline()
+
 gnuplot_command = [
     'gnuplot',
     '-c',
-    'gnuplot_chart.tpl',
+    gnuplot_chart_config_path,
 ]
 
 subprocess.call(gnuplot_command)
@@ -173,6 +193,8 @@ overlay_string = f"overlay, overlay=x='if(gte(t,0), -w+(t)*{pixel_per_second}, N
 # Get the number of the first frame of the sequence
 start_number = stats[0]['frame_number']
 
+output_file = f'{in_dir_absolute_path.name}-{datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")}.mp4'
+
 ffmpeg_command = [
     'ffmpeg',
     '-framerate',
@@ -182,12 +204,12 @@ ffmpeg_command = [
     '-i',
     f'{args.in_path}%6d.jpg',  # TODO(fsiddi) also support PNG extension
     '-i',
-    'chart.png',
+    f'{chart_file_path}',
     '-i',
     'playhead.png',
     '-filter_complex',
     f'{overlay_string}',
-    f'{in_dir_absolute_path.name}-{datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")}.mp4'
+    output_file
 ]
 
 subprocess.call(ffmpeg_command)
