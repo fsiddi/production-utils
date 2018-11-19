@@ -18,6 +18,9 @@ set xtics 2
 # Set y axis to start a 0
 set yrange [0:*]
 
+# Set x axis to start at frame number
+set xrange [{frame_start_number}:*]
+
 set origin 0.0,0.5
 # unset xtics
 plot '{frames_stats_file}' using 1:3 with lines lt 4

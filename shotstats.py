@@ -171,6 +171,7 @@ chart_file_path = in_dir_absolute_path / 'chart.png'
 template_vars = {
     'tmp_chart_file': chart_file_path,
     'frames_stats_file': frames_stats_path,
+    'frame_start_number': stats[0]['frame_number'],
     'width': frame_width,
     'height': frame_height,
 }
