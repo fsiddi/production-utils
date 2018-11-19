@@ -214,6 +214,7 @@ overlay_string = f"overlay, overlay=x='if(gte(t,0), -w+(t)*{pixel_per_second}, N
 start_number = stats[0]['frame_number']
 
 output_file = f'{in_dir_absolute_path.name}-{datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")}.mp4'
+input_path = in_dir_absolute_path.joinpath('%6d.jpg')  # TODO(fsiddi) also support PNG extension
 
 ffmpeg_command = [
     'ffmpeg',
@@ -222,7 +223,7 @@ ffmpeg_command = [
     '-start_number',
     f'{start_number}',
     '-i',
-    f'{args.in_path}%6d.jpg',  # TODO(fsiddi) also support PNG extension
+    f'{input_path}',
     '-i',
     f'{chart_file_path}',
     '-i',
