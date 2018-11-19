@@ -1,4 +1,4 @@
-set terminal pngcairo transparent enhanced font "arial,10" fontscale 1.0 size 2048, 858
+set terminal pngcairo transparent enhanced font "arial,10" fontscale 1.0 size {width}, {height}
 set output '{tmp_chart_file}'
 set key autotitle columnhead
 

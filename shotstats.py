@@ -117,7 +117,7 @@ def parse_exr_frames(frames_list):
 # If png use identify -verbose
 
 # Get current directory
-cwd = Path(os.getcwd())
+cwd = Path.cwd()
 
 # Get absolute path of input dir (if relative it will be combined with cwd)
 in_dir_absolute_path = cwd.joinpath(args.in_path)
@@ -141,7 +141,25 @@ else:
     print('No images found.')
     sys.exit()
 
-# TODO(fsiddi) Get frame resolution
+# Get frame resolution
+
+# If we are working with exr, look for a .jpg file
+# TODO(fsiddi) handle missing image
+first_frame = frames[0].with_suffix('.jpg')
+identify_format = '%[fx:w]x%[fx:h]'
+
+identify_command = [
+    'identify',
+    '-format',
+    identify_format,
+    first_frame
+]
+
+p = subprocess.Popen(identify_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+out, err = p.communicate()
+
+result = out.decode('utf-8').splitlines()[0]
+frame_width, frame_height = result.split('x')
 
 # Make chart with memory usage and render time, using the size of frame
 
@@ -153,6 +171,8 @@ chart_file_path = in_dir_absolute_path / 'chart.png'
 template_vars = {
     'tmp_chart_file': chart_file_path,
     'frames_stats_file': frames_stats_path,
+    'width': frame_width,
+    'height': frame_height,
 }
 
 with open('gnuplot_chart.tpl') as fp:
@@ -186,7 +206,7 @@ subprocess.call(gnuplot_command)
 
 # ffmpeg -framerate 24 -i extract/frames/%03d.jpg -i chart.png -i playhead.png -filter_complex "overlay, overlay=x='if(gte(t,0), -w+(t)*364.1, NAN)':y=0" output.mp4
 
-pixel_per_second = 2048 / (len(frames) / args.framerate)
+pixel_per_second = int(frame_width) / (len(frames) / args.framerate)
 
 overlay_string = f"overlay, overlay=x='if(gte(t,0), -w+(t)*{pixel_per_second}, NAN)':y=0"
 
