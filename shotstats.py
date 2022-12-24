@@ -110,7 +110,12 @@ def parse_exr_frames(frames_list):
         out, err = p.communicate()
 
         lines = iter(out.decode('utf-8').splitlines())
-        frame_stats = {'name': frame.stem}
+        frame_stats = {
+            'name': frame.stem,
+            'frame_number': 0,
+            'memory_in_mb': 0,
+            'render_time_in_s': 0
+        }
         for line in lines:
             if line.startswith('Memory'):
                 frame_stats['memory_in_mb'] = parse_memory(line)
@@ -135,7 +140,12 @@ def parse_png_frames(frames_list):
         p = subprocess.Popen(identify_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = p.communicate()
         lines = iter(out.decode('utf-8').splitlines())
-        frame_stats = {'name': frame.stem}
+        frame_stats = {
+            'name': frame.stem,
+            'frame_number': 0,
+            'memory_in_mb': 0,
+            'render_time_in_s': 0
+        }
         for line in lines:
             line = line.strip()
             if line.startswith('Memory'):
