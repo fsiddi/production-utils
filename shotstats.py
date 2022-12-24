@@ -160,7 +160,8 @@ in_dir_absolute_path = cwd.joinpath(args.in_path)
 # Look for files (png or exr)
 frames = sorted(in_dir_absolute_path.glob(f'*.{args.image_format.lower()}'))
 
-frames_stats_path = in_dir_absolute_path / 'frames_stats.csv'
+
+frames_stats_path = in_dir_absolute_path.parent / f'{in_dir_absolute_path.name}-frames_stats.csv'
 
 
 def get_frame_stats():
@@ -215,8 +216,8 @@ frame_width, frame_height = result.split('x')
 
 # tmp_dir = tempfile.TemporaryDirectory()
 # tmp_dir_path = Path(tmp_dir.name)
-gnuplot_chart_config_path = in_dir_absolute_path / 'gnuplot_chart'
-chart_file_path = in_dir_absolute_path / 'chart.png'
+gnuplot_chart_config_path = in_dir_absolute_path.parent / f'{in_dir_absolute_path.name}-gnuplot_chart'
+chart_file_path = in_dir_absolute_path.parent / f'{in_dir_absolute_path.name}-chart.png'
 
 template_vars = {
     'tmp_chart_file': chart_file_path,
