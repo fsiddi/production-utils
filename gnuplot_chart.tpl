@@ -8,7 +8,6 @@ set size 1, 0.5
 #set tics in
 #unset tics
 #set tic scale 0
-set ytics offset 2,0.5
 
 # Display border
 set border lt 4
